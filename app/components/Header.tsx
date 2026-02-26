@@ -39,7 +39,7 @@ const Header = () => {
             onClick={() => { router.push("/") }}
             className="text-xl font-semibold tracking-tight cursor-pointer"
           >
-            Echoes
+            Silencia
           </h1>
 
           <div className="relative">
