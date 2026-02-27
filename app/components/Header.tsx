@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import AuthModal from "./AuthModal";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import { toast } from "sonner";
 
 interface User {
   id: string;
@@ -18,9 +19,21 @@ const Header = () => {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const res = await axios.get("/api/user")
-      setUser(res.data);
-    }
+      try {
+        const res = await axios.get("/api/user");
+
+        setUser(res.data.user);
+      } catch (err: any) {
+        if (err.response?.status === 401) {
+          toast.error(err.response.data.error);
+        } else if (err.response?.status === 404) {
+          toast.error(err.response.data.error);
+        } else {
+          toast.error("Something went wrong");
+        }
+      }
+    };
+
     fetchUser();
   }, []);
 
@@ -28,6 +41,7 @@ const Header = () => {
     await axios.post("/api/user/logout");
     setUser(null);
     setOpen(false);
+    toast.success("Logged out successfully");
   };
 
   return (
@@ -49,7 +63,7 @@ const Header = () => {
               className="flex items-center gap-3 px-3 py-2 rounded-xl transition cursor-pointer"
             >
               <div className="w-9 h-9 rounded-full bg-linear-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-semibold text-sm shadow-sm">
-                {user ? user.username : "A"}
+                {user ? user.username?.charAt(0) : "A"}
               </div>
 
               <span className="text-sm font-medium text-gray-700 hidden sm:block">

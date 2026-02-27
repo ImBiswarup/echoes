@@ -23,7 +23,6 @@ export default function AuthModal({ open, onClose }: Props) {
         const res = await axios.post(`/api/user/auth/${mode}`, {
             username,
         });
-        console.log(res.data);
 
         setLoading(false);
 

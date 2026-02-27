@@ -1,6 +1,8 @@
 "use client";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
+import { toast } from "sonner";
 
 type User = { id: string; username: string };
 
@@ -43,31 +45,32 @@ export default function ConfessionFeed() {
   const [activeComments, setActiveComments] = useState<string | null>(null);
   const [comments, setComments] = useState<Record<string, Comment[]>>({});
   const [commentInputs, setCommentInputs] = useState<Record<string, string>>({});
+  const router = useRouter();
 
   const load = async () => {
     try {
       setLoading(true);
+
       const res = await axios.get("/api/confessions");
       setPosts(res.data);
+
     } catch (err) {
-      console.error("Failed to load posts", err);
+      toast.error("Failed to load confessions");
     } finally {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     load();
   }, []);
-
   const toggleExpand = (id: string) => {
     setExpandedPosts(prev => ({
       ...prev,
       [id]: !prev[id]
     }));
   };
-
   const react = async (id: string, type: string) => {
+    // Optimistic UI update
     setPosts(prev =>
       prev.map(post => {
         if (post.id !== id) return post;
@@ -98,14 +101,19 @@ export default function ConfessionFeed() {
 
     setActivePost(null);
 
+    const promise = axios.patch(`/api/confessions/${id}/like`, { type });
+
     try {
-      await axios.patch(`/api/confessions/${id}/like`, { type });
+      await toast.promise(promise, {
+        loading: "Updating reaction...",
+        success: "Reaction updated",
+        error: "Failed to update reaction",
+      });
     } catch (err) {
-      console.error("Reaction failed", err);
-      load(); // fallback to server truth
+      // If server fails → rollback
+      load();
     }
   };
-
   const loadComments = async (postId: string) => {
     try {
       const res = await axios.get(
@@ -120,15 +128,24 @@ export default function ConfessionFeed() {
       console.error("Failed to load comments", err);
     }
   };
-
   const submitComment = async (postId: string) => {
     const text = commentInputs[postId];
-    if (!text?.trim()) return;
+    if (!text?.trim()) {
+      toast.warning("Comment cannot be empty");
+      return;
+    }
+
+    const promise = axios.post("/api/comments", {
+      confessionId: postId,
+      text,
+    });
 
     try {
-      const res = await axios.post("/api/comments", {
-        confessionId: postId,
-        text,
+      const res = await promise;
+      await toast.promise(Promise.resolve(res), {
+        loading: "Posting comment...",
+        success: "Comment added",
+        error: "Failed to post comment",
       });
 
       setComments(prev => ({
@@ -140,21 +157,19 @@ export default function ConfessionFeed() {
         ...prev,
         [postId]: "",
       }));
+
     } catch (err) {
-      console.error("Failed to submit comment", err);
+      // No need to console.log unless debugging
     }
   };
-
   const handlePressStart = (id: string) => {
     longPressTimer.current = setTimeout(() => {
       setActivePost(id);
     }, 500);
   };
-
   const handlePressEnd = () => {
     if (longPressTimer.current) clearTimeout(longPressTimer.current);
   };
-
   const handleShare = async (postId: string) => {
     try {
       const url = `${window.location.origin}/confession/${postId}`;
@@ -189,7 +204,7 @@ export default function ConfessionFeed() {
               className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 transition hover:shadow-md"
             >
               {/* Header */}
-              <div className="flex justify-between mb-3">
+              <div onClick={() => { router.push(`${post.category}/${post.id}`) }} className="flex justify-between mb-3">
                 <div>
                   <p className="font-semibold text-sm">
                     {post?.user?.username}
@@ -204,7 +219,7 @@ export default function ConfessionFeed() {
               </div>
 
               {/* Content */}
-              <p className="text-lg mb-2 whitespace-pre-wrap">
+              <p onClick={() => { router.push(`${post.category}/${post.id}`) }} className="text-lg mb-2 whitespace-pre-wrap">
                 {displayedText}
                 {exceedsLimit && !isExpanded && " ..."}
               </p>
@@ -212,7 +227,7 @@ export default function ConfessionFeed() {
               {exceedsLimit && (
                 <button
                   onClick={() => toggleExpand(post.id)}
-                  className="text-sm text-indigo-600 hover:underline mb-4"
+                  className="text-sm text-indigo-600 hover:underline mb-4 cursor-pointer"
                 >
                   {isExpanded ? "Read less" : "Read more"}
                 </button>

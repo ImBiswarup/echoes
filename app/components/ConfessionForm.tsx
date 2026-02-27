@@ -1,5 +1,7 @@
 "use client";
+import axios from "axios";
 import { useState } from "react";
+import { toast } from "sonner";
 
 const categories = ["Confession", "Regret", "Secret", "Advice"];
 
@@ -14,22 +16,36 @@ export default function ConfessionForm({
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!content.trim()) return;
+
+    if (!content.trim()) {
+      toast.warning(`${category} cannot be empty`);
+      return;
+    }
 
     setLoading(true);
 
-    await fetch("/api/confessions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content, category }),
+    const promise = axios.post("/api/confessions", {
+      content,
+      category,
     });
 
-    setContent("");
-    setCategory("Confession");
-    setLoading(false);
+    try {
+      await toast.promise(promise, {
+        loading: `Posting ${category}...`,
+        success: `${category} posted successfully`,
+        error: `Failed to post ${category}`,
+      });
 
-    // onPostCreated(); // reload feed
-    window.location.reload();
+      setContent("");
+      setCategory("Confession");
+
+    } catch {
+    } finally {
+      setLoading(false);
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+    }
   };
 
   return (
@@ -63,8 +79,31 @@ export default function ConfessionForm({
 
           <button
             disabled={loading}
-            className="bg-black text-white px-6 py-2 rounded-full text-sm hover:opacity-80 transition"
+            className="bg-black text-white px-6 py-2 rounded-full text-sm hover:opacity-80 transition flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
           >
+            {loading && (
+              <svg
+                className="animate-spin h-4 w-4 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                />
+              </svg>
+            )}
+
             {loading ? "Posting..." : "Post"}
           </button>
         </div>
