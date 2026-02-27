@@ -70,7 +70,6 @@ export default function ConfessionFeed() {
     }));
   };
   const react = async (id: string, type: string) => {
-    // Optimistic UI update
     setPosts(prev =>
       prev.map(post => {
         if (post.id !== id) return post;
@@ -110,7 +109,6 @@ export default function ConfessionFeed() {
         error: "Failed to update reaction",
       });
     } catch (err) {
-      // If server fails → rollback
       load();
     }
   };
@@ -158,8 +156,8 @@ export default function ConfessionFeed() {
         [postId]: "",
       }));
 
-    } catch (err) {
-      // No need to console.log unless debugging
+    } catch (err: any) {
+      toast.error(err.response?.data?.error);
     }
   };
   const handlePressStart = (id: string) => {
@@ -174,7 +172,7 @@ export default function ConfessionFeed() {
     try {
       const url = `${window.location.origin}/confession/${postId}`;
       await navigator.clipboard.writeText(url);
-      alert("Link copied to clipboard!");
+      toast("Link copied to clipboard!");
     } catch (err) {
       console.error("Failed to copy:", err);
       alert("Failed to copy link");
@@ -314,7 +312,7 @@ export default function ConfessionFeed() {
                     />
                     <button
                       onClick={() => submitComment(post.id)}
-                      className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-indigo-700"
+                      className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-indigo-700 cursor-pointer"
                     >
                       Post
                     </button>

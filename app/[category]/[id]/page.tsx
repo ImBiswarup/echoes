@@ -4,6 +4,8 @@ import axios from 'axios';
 import { useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
+import Link from 'next/link';
+import Header from '@/app/components/Header';
 
 interface User {
     id: string;
@@ -30,6 +32,7 @@ interface Confession {
     createdAt: string;
     reactions: Reaction[];
     comments: Comment[];
+    user: User;
 }
 
 const Page = () => {
@@ -44,7 +47,6 @@ const Page = () => {
             setLoading(true);
             const res = await axios.get(`/api/confessions/${id}`);
             setPost(res.data);
-            console.log(res.data);
         } catch (err: any) {
             setError(err?.response?.data?.error || 'Failed to load confession');
         } finally {
@@ -67,7 +69,8 @@ const Page = () => {
     if (error) {
         return (
             <div className="text-center mt-10 text-red-500">
-                {error}
+                {error}, Create an account to access this page
+                <Link href="/">Register</Link>
             </div>
         );
     }
@@ -75,60 +78,66 @@ const Page = () => {
     if (!post) return null;
 
     return (
-        <div className="max-w-2xl mx-auto mt-10 px-4">
-            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+        <>
+            <Header />
+            <div className="max-w-2xl mx-auto mt-10 px-4">
+                <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
 
-                {/* Category */}
-                <span className="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-600">
-                    {post.category}
-                </span>
+                    {/* username */}
+                    <span className="text-sm text-gray-800 font-bold">{post.user?.username}</span>
 
-                {/* Content */}
-                <p className="mt-4 text-lg leading-relaxed text-gray-800">
-                    {post.content}
-                </p>
+                    {/* Category */}
+                    <span className="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-600">
+                        {post.category}
+                    </span>
 
-                {/* Meta */}
-                <div className="mt-4 text-sm text-gray-400">
-                    {new Date(post.createdAt).toLocaleString()}
-                </div>
+                    {/* Content */}
+                    <p className="mt-4 text-lg leading-relaxed text-gray-800">
+                        {post.content}
+                    </p>
 
-                {/* Reactions */}
-                <div className="mt-6 border-t pt-4">
-                    <h3 className="font-medium mb-2 text-black">
-                        Reactions ({post.reactions.length})
-                    </h3>
-                </div>
+                    {/* Meta */}
+                    <div className="mt-4 text-sm text-gray-400">
+                        {new Date(post.createdAt).toLocaleString()}
+                    </div>
 
-                {/* Comments */}
-                <div className="mt-6 border-t pt-4">
-                    <h3 className="font-medium mb-4 text-black">
-                        Comments ({post.comments.length})
-                    </h3>
+                    {/* Reactions */}
+                    <div className="mt-6 border-t pt-4">
+                        <h3 className="font-medium mb-2 text-black">
+                            Reactions ({post.reactions.length})
+                        </h3>
+                    </div>
 
-                    {post.comments.length === 0 ? (
-                        <p className="text-gray-400 text-sm">
-                            No comments yet.
-                        </p>
-                    ) : (
-                        <div className="space-y-3">
-                            {post.comments.map((comment) => (
-                                <div
-                                    key={comment.id}
-                                    className="bg-gray-50 text-black p-3 rounded-lg text-sm"
-                                >   {<span className="font-semibold mr-2">{comment?.user?.username}</span>}
-                                    {comment.text}
-                                    <div className="text-xs text-gray-400 mt-1">
-                                        {new Date(comment.createdAt).toLocaleString()}
+                    {/* Comments */}
+                    <div className="mt-6 border-t pt-4">
+                        <h3 className="font-medium mb-4 text-black">
+                            Comments ({post.comments.length})
+                        </h3>
+
+                        {post.comments.length === 0 ? (
+                            <p className="text-gray-400 text-sm">
+                                No comments yet.
+                            </p>
+                        ) : (
+                            <div className="space-y-3">
+                                {post.comments.map((comment) => (
+                                    <div
+                                        key={comment.id}
+                                        className="bg-gray-50 text-black p-3 rounded-lg text-sm"
+                                    >   {<span className="font-semibold mr-2">{comment?.user?.username}</span>}
+                                        {comment.text}
+                                        <div className="text-xs text-gray-400 mt-1">
+                                            {new Date(comment.createdAt).toLocaleString()}
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
 
+                </div>
             </div>
-        </div>
+        </>
     );
 };
 

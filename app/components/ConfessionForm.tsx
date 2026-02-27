@@ -64,7 +64,7 @@ export default function ConfessionForm({
               type="button"
               key={cat}
               onClick={() => setCategory(cat)}
-              className={`px-3 py-1 rounded-full text-sm border transition ${category === cat
+              className={`px-3 py-1 rounded-full text-sm border transition cursor-pointer ${category === cat
                 ? "bg-black text-white border-black"
                 : "bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200"
                 }`}
@@ -79,7 +79,7 @@ export default function ConfessionForm({
 
           <button
             disabled={loading}
-            className="bg-black text-white px-6 py-2 rounded-full text-sm hover:opacity-80 transition flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+            className="bg-black text-white px-6 py-2 rounded-full text-sm hover:opacity-80 transition flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
           >
             {loading && (
               <svg

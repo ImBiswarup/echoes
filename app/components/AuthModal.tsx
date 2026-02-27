@@ -45,7 +45,7 @@ export default function AuthModal({ open, onClose }: Props) {
                     ✕
                 </button>
 
-                <h2 className="text-xl font-semibold mb-4 text-center">
+                <h2 className="text-xl font-semibold mb-4 text-center text-black">
                     {mode === "login" ? "Login" : "Create Account"}
                 </h2>
 
